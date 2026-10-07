@@ -18,377 +18,201 @@ class AuraApp extends StatefulWidget {
 }
 
 class _AuraAppState extends State<AuraApp> {
-  String _themeMode = 'oled'; // 'oled', 'velvet', 'light'
+  String _displayName = 'Александр';
+  String _username = 'alex_pro';
+  String _avatarUrl = '👑';
+  String _themeMode = 'oled';
   Color _accentColor = const Color(0xFF8E7CFF);
   bool _is120Fps = true;
   bool _isGamingMode = true;
   bool _isVpnConnected = true;
-  bool _onboardingDone = false;
 
-  ThemeData _getTheme() {
+  final List<Map<String, String>> _receivedGifts = [
+    {'icon': '⭐', 'name': 'Звезда', 'from': 'Алиса', 'count': '1'},
+    {'icon': '🚀', 'name': 'Ракета', 'from': 'Максим', 'count': '2'},
+    {'icon': '💎', 'name': 'Кристалл', 'from': 'Aura Team', 'count': '1'},
+  ];
+
+  ThemeData _buildTheme() {
     if (_themeMode == 'oled') {
       return ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: Colors.black,
         canvasColor: Colors.black,
-        cardColor: const Color(0xFF080808),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: _accentColor,
-          brightness: Brightness.dark,
-          surface: Colors.black,
-        ),
+        cardColor: const Color(0xFF0A0A0A),
+        colorScheme: ColorScheme.fromSeed(seedColor: _accentColor, brightness: Brightness.dark, surface: Colors.black),
       );
     } else if (_themeMode == 'light') {
       return ThemeData(
         brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFF2F1FA),
-        canvasColor: const Color(0xFFFAF9FF),
+        scaffoldBackgroundColor: const Color(0xFFF2F2F7),
+        canvasColor: Colors.white,
         cardColor: Colors.white,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: _accentColor,
-          brightness: Brightness.light,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: _accentColor, brightness: Brightness.light),
       );
     }
     return ThemeData(
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color(0xFF13141F),
-      canvasColor: const Color(0xFF1B1C2B),
-      cardColor: const Color(0xFF24263A),
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: _accentColor,
-        brightness: Brightness.dark,
-      ),
+      scaffoldBackgroundColor: const Color(0xFF12131E),
+      canvasColor: const Color(0xFF1A1B2A),
+      cardColor: const Color(0xFF222438),
+      colorScheme: ColorScheme.fromSeed(seedColor: _accentColor, brightness: Brightness.dark),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Aura',
+      title: 'Aura iOS Edition',
       debugShowCheckedModeBanner: false,
-      theme: _getTheme(),
-      home: _onboardingDone
-          ? AuraShellScreen(
-              themeMode: _themeMode,
-              accentColor: _accentColor,
-              is120Fps: _is120Fps,
-              isGamingMode: _isGamingMode,
-              isVpnConnected: _isVpnConnected,
-              onThemeChanged: (m) => setState(() => _themeMode = m),
-              onAccentChanged: (c) => setState(() => _accentColor = c),
-              on120FpsChanged: (v) => setState(() => _is120Fps = v),
-              onGamingModeChanged: (v) => setState(() => _isGamingMode = v),
-              onVpnToggled: (v) => setState(() => _isVpnConnected = v),
-              onRestartOnboarding: () => setState(() => _onboardingDone = false),
-            )
-          : OnboardingWizard(
-              initialTheme: _themeMode,
-              initialAccent: _accentColor,
-              onFinished: (theme, accent, fps, game) {
-                setState(() {
-                  _themeMode = theme;
-                  _accentColor = accent;
-                  _is120Fps = fps;
-                  _isGamingMode = game;
-                  _onboardingDone = true;
-                });
-              },
-            ),
-    );
-  }
-}
-
-/// Мастер настройки при регистрации
-class OnboardingWizard extends StatefulWidget {
-  final String initialTheme;
-  final Color initialAccent;
-  final Function(String theme, Color accent, bool fps120, bool gamingMode) onFinished;
-
-  const OnboardingWizard({
-    super.key,
-    required this.initialTheme,
-    required this.initialAccent,
-    required this.onFinished,
-  });
-
-  @override
-  State<OnboardingWizard> createState() => _OnboardingWizardState();
-}
-
-class _OnboardingWizardState extends State<OnboardingWizard> {
-  int _step = 0;
-  late String _theme;
-  late Color _accent;
-  bool _fps120 = true;
-  bool _gameMode = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _theme = widget.initialTheme;
-    _accent = widget.initialAccent;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF090A10),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 460),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  Row(
-                    children: List.generate(3, (i) {
-                      final active = i <= _step;
-                      return Expanded(
-                        child: Container(
-                          height: 4,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                            color: active ? _accent : Colors.white12,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 28),
-                  Text(_getTitle(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-                  const SizedBox(height: 8),
-                  Text(_getSub(), style: const TextStyle(fontSize: 12, color: Colors.grey), textAlign: TextAlign.center),
-                  const SizedBox(height: 24),
-                  Expanded(child: _buildBody()),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (_step > 0)
-                        TextButton(onPressed: () => setState(() => _step--), child: const Text('Назад', style: TextStyle(color: Colors.grey)))
-                      else
-                        const SizedBox(),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _accent,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                        ),
-                        onPressed: () {
-                          if (_step < 2) {
-                            setState(() => _step++);
-                          } else {
-                            widget.onFinished(_theme, _accent, _fps120, _gameMode);
-                          }
-                        },
-                        child: Text(_step == 2 ? 'Войти в Aura 🚀' : 'Далее →'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _getTitle() {
-    if (_step == 0) return 'Шаг 1: Тема и защита OLED';
-    if (_step == 1) return 'Шаг 2: Скорость и 120 FPS';
-    return 'Шаг 3: Цвет и стиль';
-  }
-
-  String _getSub() {
-    if (_step == 0) return 'OLED Black отключает пиксели матрицы и предотвращает выгорание экрана.';
-    if (_step == 1) return 'Активирует рендеринг 120 Гц и аудиопакеты Opus 10 мс для минимальной задержки.';
-    return 'Выберите цвет акцента для кнопок, свечений и статусов.';
-  }
-
-  Widget _buildBody() {
-    if (_step == 0) {
-      return ListView(
-        children: [
-          _tile('oled', 'OLED True Black (#000000)', '0% выгорания, отключение пикселей', Colors.black),
-          _tile('velvet', 'Velvet Dark (Матовая темная)', 'Глубокий оттенок с размытием', const Color(0xFF13141F)),
-          _tile('light', 'Pastel Light (Светлая пастель)', 'Мягкие светлые тона', const Color(0xFFF2F1FA)),
-        ],
-      );
-    } else if (_step == 1) {
-      return ListView(
-        children: [
-          _sw('Глобальный режим 120 FPS', '8.33 мс на кадр для всех анимаций', _fps120, (v) => setState(() => _fps120 = v)),
-          _sw('Игровой режим (10 мс)', 'Приоритет пакетов QoS EF, нулевой джиттер', _gameMode, (v) => setState(() => _gameMode = v)),
-        ],
-      );
-    }
-    return Center(
-      child: Wrap(
-        spacing: 14,
-        runSpacing: 14,
-        children: [
-          _dot(const Color(0xFF8E7CFF)),
-          _dot(const Color(0xFF00F59B)),
-          _dot(const Color(0xFFFF8EB3)),
-          _dot(const Color(0xFF7AC7FF)),
-          _dot(const Color(0xFFFFCA7A)),
-        ],
-      ),
-    );
-  }
-
-  Widget _tile(String val, String title, String sub, Color c) {
-    final sel = _theme == val;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161826),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: sel ? _accent : Colors.white12, width: sel ? 2 : 1),
-      ),
-      child: ListTile(
-        leading: CircleAvatar(backgroundColor: c, radius: 14),
-        title: Text(title, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold)),
-        subtitle: Text(sub, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-        trailing: sel ? Icon(Icons.check_circle, color: _accent) : null,
-        onTap: () => setState(() => _theme = val),
-      ),
-    );
-  }
-
-  Widget _sw(String title, String sub, bool val, ValueChanged<bool> fn) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: const Color(0xFF161826), borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white12)),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
-              Text(sub, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-            ]),
-          ),
-          Switch(value: val, activeColor: _accent, onChanged: fn),
-        ],
-      ),
-    );
-  }
-
-  Widget _dot(Color c) {
-    final sel = _accent == c;
-    return GestureDetector(
-      onTap: () => setState(() => _accent = c),
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: c,
-          shape: BoxShape.circle,
-          border: Border.all(color: sel ? Colors.white : Colors.transparent, width: 3),
-          boxShadow: [if (sel) BoxShadow(color: c.withOpacity(0.4), blurRadius: 14, spreadRadius: 2)],
-        ),
+      theme: _buildTheme(),
+      home: AuraShellNavigation(
+        displayName: _displayName,
+        username: _username,
+        avatarUrl: _avatarUrl,
+        themeMode: _themeMode,
+        accentColor: _accentColor,
+        is120Fps: _is120Fps,
+        isGamingMode: _isGamingMode,
+        isVpnConnected: _isVpnConnected,
+        receivedGifts: _receivedGifts,
+        onProfileUpdated: (name, user, av) {
+          setState(() {
+            _displayName = name;
+            _username = user;
+            _avatarUrl = av;
+          });
+        },
+        onThemeChanged: (m) => setState(() => _themeMode = m),
+        onAccentChanged: (c) => setState(() => _accentColor = c),
+        on120FpsChanged: (v) => setState(() => _is120Fps = v),
+        onGamingModeChanged: (v) => setState(() => _isGamingMode = v),
+        onVpnToggled: (v) => setState(() => _isVpnConnected = v),
+        onGiftSent: (gift) => setState(() => _receivedGifts.add(gift)),
       ),
     );
   }
 }
 
-/// Главный экран приложения
-class AuraShellScreen extends StatefulWidget {
+class AuraShellNavigation extends StatefulWidget {
+  final String displayName;
+  final String username;
+  final String avatarUrl;
   final String themeMode;
   final Color accentColor;
   final bool is120Fps;
   final bool isGamingMode;
   final bool isVpnConnected;
+  final List<Map<String, String>> receivedGifts;
+  final Function(String name, String user, String av) onProfileUpdated;
   final ValueChanged<String> onThemeChanged;
   final ValueChanged<Color> onAccentChanged;
   final ValueChanged<bool> on120FpsChanged;
   final ValueChanged<bool> onGamingModeChanged;
   final ValueChanged<bool> onVpnToggled;
-  final VoidCallback onRestartOnboarding;
+  final ValueChanged<Map<String, String>> onGiftSent;
 
-  const AuraShellScreen({
+  const AuraShellNavigation({
     super.key,
+    required this.displayName,
+    required this.username,
+    required this.avatarUrl,
     required this.themeMode,
     required this.accentColor,
     required this.is120Fps,
     required this.isGamingMode,
     required this.isVpnConnected,
+    required this.receivedGifts,
+    required this.onProfileUpdated,
     required this.onThemeChanged,
     required this.onAccentChanged,
     required this.on120FpsChanged,
     required this.onGamingModeChanged,
     required this.onVpnToggled,
-    required this.onRestartOnboarding,
+    required this.onGiftSent,
   });
 
   @override
-  State<AuraShellScreen> createState() => _AuraShellScreenState();
+  State<AuraShellNavigation> createState() => _AuraShellNavigationState();
 }
 
-class _AuraShellScreenState extends State<AuraShellScreen> {
-  final List<Map<String, String>> _messages = [
-    {'u': 'Александр', 'r': 'Владелец', 't': 'Aura работает в 120 FPS! Тайминги 8.33 мс на кадр ⚡'},
-    {'u': 'Алиса', 'r': 'Lead UI', 't': 'Встроенный VPN Happ (VLESS Reality) защищает звонки и обходит блокировки 🛡️'},
-  ];
-  final TextEditingController _msgCtrl = TextEditingController();
+class _AuraShellNavigationState extends State<AuraShellNavigation> {
+  int _currentIndex = 3; // По умолчанию открыт Профиль
 
-  void _send() {
-    final s = _msgCtrl.text.trim();
-    if (s.isEmpty) return;
+  final List<Map<String, dynamic>> _giftsCatalog = [
+    {'id': 'star', 'icon': '⭐', 'name': 'Звезда', 'price': 99, 'rarity': 'Редкий', 'color': Color(0xFFFFD166)},
+    {'id': 'rocket', 'icon': '🚀', 'name': 'Ракета', 'price': 199, 'rarity': 'Эпический', 'color': Color(0xFF00F59B)},
+    {'id': 'diamond', 'icon': '💎', 'name': 'Кристалл', 'price': 499, 'rarity': 'Легендарный', 'color': Color(0xFF7AC7FF)},
+    {'id': 'crown', 'icon': '👑', 'name': 'Корона', 'price': 990, 'rarity': 'Мифический', 'color': Color(0xFFFF8EB3)},
+    {'id': 'cake', 'icon': '🎂', 'name': 'Праздничный торт', 'price': 149, 'rarity': 'Лимитированный', 'color': Color(0xFFFFCA7A)},
+  ];
+
+  final List<Map<String, String>> _vpnNodes = [
+    {'name': '🇩🇪 Германия (Франкфурт)', 'type': 'VLESS-Reality', 'ping': '18 ms', 'host': 'fra.aura.vpn'},
+    {'name': '🇫🇮 Финляндия (Хельсинки)', 'type': 'VLESS-Reality', 'ping': '15 ms', 'host': 'hel.aura.vpn'},
+    {'name': '🇳🇱 Нидерланды (Амстердам)', 'type': 'WireGuard', 'ping': '22 ms', 'host': 'ams.aura.vpn'},
+  ];
+
+  final List<Map<String, String>> _directChats = [
+    {'name': 'Алиса', 'lastMsg': 'Подарила тебе Звезду ⭐! Спасибо за стрим!', 'time': '10:48', 'unread': '1'},
+    {'name': 'Максим', 'lastMsg': 'Стрим 120 FPS просто пушка 🔥', 'time': '09:20', 'unread': '0'},
+  ];
+
+  void _importVpnLink(String link) {
+    if (link.isEmpty) return;
+    String name = 'Кастомная нода';
+    if (link.contains('#')) name = Uri.decodeComponent(link.split('#').last);
     setState(() {
-      _messages.add({'u': 'Вы', 'r': 'Admin', 't': s});
-      _msgCtrl.clear();
+      _vpnNodes.add({
+        'name': '🛡️ $name',
+        'type': 'VLESS-Reality',
+        'ping': '19 ms',
+        'host': link.substring(0, link.length > 25 ? 25 : link.length),
+      });
     });
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Конфиг "$name" успешно добавлен!')));
   }
 
-  void _showVpnDialog() {
+  void _openGiftsShop(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: widget.themeMode == 'oled' ? Colors.black : const Color(0xFF131522),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setMState) => Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(children: [
-                const Text('🛡️ Встроенный VPN (Happ Core)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const Spacer(),
-                IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
-              ]),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () {
-                  widget.onVpnToggled(!widget.isVpnConnected);
-                  setMState(() {});
-                },
-                child: Container(
-                  width: 90,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: widget.isVpnConnected ? const Color(0xFF00F59B) : Colors.grey, width: 3),
-                    color: widget.isVpnConnected ? const Color(0xFF00F59B).withOpacity(0.15) : Colors.white10,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(widget.isVpnConnected ? 'ВКЛ' : 'ВЫКЛ', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                widget.isVpnConnected ? '● VLESS-Reality Активен (18 ms, Германия)' : '○ VPN Отключен',
-                style: TextStyle(color: widget.isVpnConnected ? const Color(0xFF00F59B) : Colors.grey, fontWeight: FontWeight.bold, fontSize: 12),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _GiftsShopSheet(
+        catalog: _giftsCatalog,
+        accentColor: widget.accentColor,
+        themeMode: widget.themeMode,
+        onBuyGift: (gift) {
+          Navigator.pop(ctx);
+          _showPaymentSheet(context, gift);
+        },
+      ),
+    );
+  }
+
+  void _showPaymentSheet(BuildContext context, Map<String, dynamic> gift) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _PaymentCheckoutSheet(
+        gift: gift,
+        accentColor: widget.accentColor,
+        themeMode: widget.themeMode,
+        onSuccess: () {
+          Navigator.pop(ctx);
+          widget.onGiftSent({
+            'icon': gift['icon'],
+            'name': gift['name'],
+            'from': 'Вы',
+            'count': '1',
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Подарок "${gift['name']}" куплен! Средства зачислены на привязанную карту.'),
+              backgroundColor: const Color(0xFF00F59B),
+            ),
+          );
+        },
       ),
     );
   }
@@ -396,82 +220,220 @@ class _AuraShellScreenState extends State<AuraShellScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            const Text('✦ Aura', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(color: const Color(0xFF00F59B).withOpacity(0.18), borderRadius: BorderRadius.circular(6)),
-              child: const Text('120 FPS', style: TextStyle(color: Color(0xFF00F59B), fontSize: 10, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.shield, color: widget.isVpnConnected ? const Color(0xFF00F59B) : Colors.grey),
-            tooltip: 'VPN Happ',
-            onPressed: _showVpnDialog,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          _IosServersTab(
+            themeMode: widget.themeMode,
+            accentColor: widget.accentColor,
+            is120Fps: widget.is120Fps,
+            isGamingMode: widget.isGamingMode,
+            onOpenGifts: () => _openGiftsShop(context),
           ),
-          IconButton(
-            icon: const Icon(Icons.auto_awesome),
-            tooltip: 'Мастер настройки',
-            onPressed: widget.onRestartOnboarding,
+          _IosChatsTab(
+            themeMode: widget.themeMode,
+            accentColor: widget.accentColor,
+            chats: _directChats,
+          ),
+          _IosVpnTab(
+            themeMode: widget.themeMode,
+            accentColor: widget.accentColor,
+            isConnected: widget.isVpnConnected,
+            nodes: _vpnNodes,
+            onToggle: widget.onVpnToggled,
+            onImportLink: _importVpnLink,
+          ),
+          _IosProfileTab(
+            displayName: widget.displayName,
+            username: widget.username,
+            avatarUrl: widget.avatarUrl,
+            themeMode: widget.themeMode,
+            accentColor: widget.accentColor,
+            is120Fps: widget.is120Fps,
+            isGamingMode: widget.isGamingMode,
+            gifts: widget.receivedGifts,
+            onProfileUpdated: widget.onProfileUpdated,
+            onThemeChanged: widget.onThemeChanged,
+            onAccentChanged: widget.onAccentChanged,
+            on120FpsChanged: widget.on120FpsChanged,
+            onGamingModeChanged: widget.onGamingModeChanged,
+            onOpenGiftsShop: () => _openGiftsShop(context),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Voice 120 FPS strip
-          Container(
-            margin: const EdgeInsets.all(10),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: widget.themeMode == 'oled' ? const Color(0xFF0A0A0A) : const Color(0xFF1E2032),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF00F59B).withOpacity(0.3)),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: widget.themeMode == 'oled' ? Colors.black : const Color(0xFF13141F),
+          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.08))),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (idx) => setState(() => _currentIndex = idx),
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          selectedItemColor: widget.accentColor,
+          unselectedItemColor: Colors.grey,
+          selectedFontSize: 11,
+          unselectedFontSize: 11,
+          items: [
+            const BottomNavigationBarItem(icon: Icon(Icons.forum_outlined), activeIcon: Icon(Icons.forum), label: 'Каналы'),
+            BottomNavigationBarItem(
+              icon: Badge(label: const Text('1'), child: const Icon(Icons.chat_bubble_outline)),
+              activeIcon: const Icon(Icons.chat_bubble),
+              label: 'Чаты',
             ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.shield_outlined, color: widget.isVpnConnected ? const Color(0xFF00F59B) : null),
+              activeIcon: const Icon(Icons.shield),
+              label: 'VPN Happ',
+            ),
+            const BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Профиль'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _IosServersTab extends StatelessWidget {
+  final String themeMode;
+  final Color accentColor;
+  final bool is120Fps;
+  final bool isGamingMode;
+  final VoidCallback onOpenGifts;
+
+  const _IosServersTab({
+    required this.themeMode,
+    required this.accentColor,
+    required this.is120Fps,
+    required this.isGamingMode,
+    required this.onOpenGifts,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        children: [
+          Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                const Icon(Icons.graphic_eq, color: Color(0xFF00F59B), size: 20),
+                const Text('Aura Community', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 19, letterSpacing: -0.5)),
                 const SizedBox(width: 8),
-                const Text('⚡ Игровая арена', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(color: const Color(0xFF00F59B).withOpacity(0.18), borderRadius: BorderRadius.circular(6)),
+                  child: const Text('120 FPS', style: TextStyle(color: Color(0xFF00F59B), fontSize: 10, fontWeight: FontWeight.bold)),
+                ),
                 const Spacer(),
-                const Text('10 ms • 120 Hz', style: TextStyle(fontSize: 10, color: Color(0xFF00F59B), fontWeight: FontWeight.bold)),
+                IconButton(
+                  icon: const Icon(Icons.card_giftcard, color: Color(0xFFFFD166)),
+                  tooltip: 'Подарки',
+                  onPressed: onOpenGifts,
+                ),
               ],
             ),
           ),
-          // Chat list
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: themeMode == 'oled' ? const Color(0xFF0E0E0E) : const Color(0xFF1E2032),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF00F59B).withOpacity(0.35)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.graphic_eq, color: Color(0xFF00F59B)),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('⚡ Игровая арена 120 FPS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                    Text(isGamingMode ? '● Задержка 10 мс (QoS EF)' : '● Стандартная задержка', style: const TextStyle(fontSize: 11, color: Color(0xFF00F59B))),
+                  ],
+                ),
+              ],
+            ),
+          ),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: _messages.length,
-              itemBuilder: (ctx, i) {
-                final m = _messages[i];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                _header('ТЕКСТОВЫЕ КАНАЛЫ'),
+                _card([
+                  _tile('# общий-чат', 'Основной чат сообщества', Icons.tag),
+                  _tile('# турниры-и-игры', 'Стримы в 120 FPS', Icons.sports_esports),
+                ]),
+                const SizedBox(height: 16),
+                _header('ГОЛОСОВЫЕ КОМНАТЫ'),
+                _card([
+                  _tile('⚡ Игровая арена', '3 участника • 120 FPS', Icons.volume_up, tr: '10 мс'),
+                  _tile('🎧 Лаунж зона', 'Свободно', Icons.headphones),
+                ]),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _header(String t) => Padding(padding: const EdgeInsets.only(left: 12, bottom: 6), child: Text(t, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)));
+  Widget _card(List<Widget> c) => Container(decoration: BoxDecoration(color: themeMode == 'oled' ? const Color(0xFF0C0C0C) : const Color(0xFF1B1D2C), borderRadius: BorderRadius.circular(16)), child: Column(children: c));
+  Widget _tile(String t, String s, IconData ic, {String? tr}) => ListTile(dense: true, leading: Icon(ic, color: accentColor, size: 20), title: Text(t, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)), subtitle: Text(s, style: const TextStyle(fontSize: 11, color: Colors.grey)), trailing: tr != null ? Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: const Color(0xFF00F59B).withOpacity(0.18), borderRadius: BorderRadius.circular(6)), child: Text(tr, style: const TextStyle(color: Color(0xFF00F59B), fontSize: 10, fontWeight: FontWeight.bold))) : const Icon(Icons.chevron_right, color: Colors.grey, size: 18));
+}
+
+class _IosChatsTab extends StatelessWidget {
+  final String themeMode;
+  final Color accentColor;
+  final List<Map<String, String>> chats;
+
+  const _IosChatsTab({required this.themeMode, required this.accentColor, required this.chats});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(height: 52, padding: const EdgeInsets.symmetric(horizontal: 16), alignment: Alignment.centerLeft, child: const Text('Сообщения', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20, letterSpacing: -0.5))),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: chats.length,
+              separatorBuilder: (_, __) => const Divider(height: 1, indent: 64, color: Colors.white10),
+              itemBuilder: (ctx, idx) {
+                final c = chats[idx];
+                final hasUnread = c['unread'] != '0';
+                return Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CircleAvatar(radius: 16, backgroundColor: widget.accentColor, child: Text(m['u']![0], style: const TextStyle(fontSize: 12, color: Colors.white))),
-                      const SizedBox(width: 10),
+                      CircleAvatar(radius: 24, backgroundColor: accentColor, child: Text(c['name']![0], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                      const SizedBox(width: 14),
                       Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: widget.themeMode == 'oled' ? const Color(0xFF080808) : const Color(0xFF1D1F30),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(m['u']!, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: widget.accentColor)),
-                              const SizedBox(height: 3),
-                              Text(m['t']!, style: const TextStyle(fontSize: 13)),
-                            ],
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(c['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                            const SizedBox(height: 2),
+                            Text(c['lastMsg']!, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          ],
                         ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(c['time']!, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                          if (hasUnread) ...[
+                            const SizedBox(height: 4),
+                            Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: accentColor, borderRadius: BorderRadius.circular(10)), child: Text(c['unread']!, style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold))),
+                          ],
+                        ],
                       ),
                     ],
                   ),
@@ -479,30 +441,302 @@ class _AuraShellScreenState extends State<AuraShellScreen> {
               },
             ),
           ),
-          // Input
-          SafeArea(
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _msgCtrl,
-                      decoration: InputDecoration(
-                        hintText: '120 FPS сообщение...',
-                        filled: true,
-                        fillColor: widget.themeMode == 'oled' ? const Color(0xFF0A0A0A) : const Color(0xFF1E2032),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      onSubmitted: (_) => _send(),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(icon: const Icon(Icons.send), color: widget.accentColor, onPressed: _send),
-                ],
+        ],
+      ),
+    );
+  }
+}
+
+class _IosVpnTab extends StatelessWidget {
+  final String themeMode;
+  final Color accentColor;
+  final bool isConnected;
+  final List<Map<String, String>> nodes;
+  final ValueChanged<bool> onToggle;
+  final ValueChanged<String> onImportLink;
+
+  const _IosVpnTab({required this.themeMode, required this.accentColor, required this.isConnected, required this.nodes, required this.onToggle, required this.onImportLink});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Row(
+            children: [
+              const Text('VPN Happ Core', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20, letterSpacing: -0.5)),
+              const Spacer(),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00F59B).withOpacity(0.18), foregroundColor: const Color(0xFF00F59B), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
+                icon: const Icon(Icons.add_link, size: 16),
+                label: const Text('Вставить ссылку', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                onPressed: () {
+                  final ctrl = TextEditingController();
+                  showDialog(context: context, builder: (ctx) => AlertDialog(backgroundColor: const Color(0xFF161826), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), title: const Text('Импорт VPN-ссылки'), content: TextField(controller: ctrl, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(hintText: 'vless://... или ss://...', hintStyle: TextStyle(color: Colors.grey))), actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')), ElevatedButton(onPressed: () { Navigator.pop(ctx); onImportLink(ctrl.text.trim()); }, child: const Text('Добавить'))]));
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          Center(
+            child: GestureDetector(
+              onTap: () => onToggle(!isConnected),
+              child: Container(
+                width: 130,
+                height: 130,
+                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: isConnected ? const Color(0xFF00F59B) : Colors.white24, width: 3), color: isConnected ? const Color(0xFF00F59B).withOpacity(0.15) : Colors.white10),
+                alignment: Alignment.center,
+                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.shield, size: 42, color: isConnected ? const Color(0xFF00F59B) : Colors.grey), const SizedBox(height: 4), Text(isConnected ? 'ПОДКЛЮЧЕН' : 'ОТКЛЮЧЕН', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))]),
               ),
             ),
+          ),
+          const SizedBox(height: 12),
+          Center(child: Text(isConnected ? '● VLESS-Reality Активен (Обход DPI)' : '○ VPN Отключен', style: TextStyle(color: isConnected ? const Color(0xFF00F59B) : Colors.grey, fontWeight: FontWeight.bold, fontSize: 12))),
+          const SizedBox(height: 28),
+          const Text('СЕРВЕРЫ И ПОЛЬЗОВАТЕЛЬСКИЕ ССЫЛКИ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+          const SizedBox(height: 10),
+          ...nodes.map((n) => Container(margin: const EdgeInsets.only(bottom: 8), decoration: BoxDecoration(color: themeMode == 'oled' ? const Color(0xFF0C0C0C) : const Color(0xFF1B1D2C), borderRadius: BorderRadius.circular(16)), child: ListTile(title: Text(n['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)), subtitle: Text('${n['type']} • ${n['host']}', style: const TextStyle(fontSize: 11, color: Colors.grey)), trailing: Text(n['ping']!, style: const TextStyle(color: Color(0xFF00F59B), fontWeight: FontWeight.bold, fontSize: 12))))),
+        ],
+      ),
+    );
+  }
+}
+
+class _IosProfileTab extends StatelessWidget {
+  final String displayName;
+  final String username;
+  final String avatarUrl;
+  final String themeMode;
+  final Color accentColor;
+  final bool is120Fps;
+  final bool isGamingMode;
+  final List<Map<String, String>> gifts;
+  final Function(String name, String user, String av) onProfileUpdated;
+  final ValueChanged<String> onThemeChanged;
+  final ValueChanged<Color> onAccentChanged;
+  final ValueChanged<bool> on120FpsChanged;
+  final ValueChanged<bool> onGamingModeChanged;
+  final VoidCallback onOpenGiftsShop;
+
+  const _IosProfileTab({
+    required this.displayName,
+    required this.username,
+    required this.avatarUrl,
+    required this.themeMode,
+    required this.accentColor,
+    required this.is120Fps,
+    required this.isGamingMode,
+    required this.gifts,
+    required this.onProfileUpdated,
+    required this.onThemeChanged,
+    required this.onAccentChanged,
+    required this.on120FpsChanged,
+    required this.onGamingModeChanged,
+    required this.onOpenGiftsShop,
+  });
+
+  void _editProfile(BuildContext context) {
+    final nameCtrl = TextEditingController(text: displayName);
+    final userCtrl = TextEditingController(text: username);
+    String selAv = avatarUrl;
+    final presets = ['👑', '🦊', '⚡', '🎮', '🌸', '🚀', '🐱', '🐺'];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) => AlertDialog(
+          backgroundColor: const Color(0xFF161826),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: const Text('Редактировать профиль'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(radius: 32, backgroundColor: accentColor, child: Text(selAv, style: const TextStyle(fontSize: 28))),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                children: presets.map((av) => GestureDetector(
+                  onTap: () => setD(() => selAv = av),
+                  child: Container(padding: const EdgeInsets.all(4), decoration: BoxDecoration(shape: BoxShape.circle, color: selAv == av ? accentColor.withOpacity(0.4) : Colors.transparent), child: Text(av, style: const TextStyle(fontSize: 20))),
+                )).toList(),
+              ),
+              const SizedBox(height: 14),
+              TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Имя профиля')),
+              TextField(controller: userCtrl, decoration: const InputDecoration(labelText: 'Юзернейм (@username)', prefixText: '@')),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
+            ElevatedButton(onPressed: () { Navigator.pop(ctx); onProfileUpdated(nameCtrl.text.trim(), userCtrl.text.trim().replaceAll('@', ''), selAv); }, child: const Text('Сохранить')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: themeMode == 'oled' ? const Color(0xFF0C0C0C) : const Color(0xFF1B1D2C), borderRadius: BorderRadius.circular(20)),
+            child: Row(
+              children: [
+                CircleAvatar(radius: 34, backgroundColor: accentColor, child: Text(avatarUrl, style: const TextStyle(fontSize: 30))),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(displayName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                      Text('@$username', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                      const SizedBox(height: 4),
+                      const Text('● В сети • 120 FPS Active', style: TextStyle(color: Color(0xFF00F59B), fontSize: 11, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                IconButton(icon: const Icon(Icons.edit_outlined), onPressed: () => _editProfile(context)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              const Text('ВИДРИНА ПОДАРКОВ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+              const Spacer(),
+              TextButton.icon(
+                icon: const Icon(Icons.storefront, size: 14, color: Color(0xFFFFD166)),
+                label: const Text('Магазин подарков', style: TextStyle(fontSize: 12, color: Color(0xFFFFD166), fontWeight: FontWeight.bold)),
+                onPressed: onOpenGiftsShop,
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(color: themeMode == 'oled' ? const Color(0xFF0C0C0C) : const Color(0xFF1B1D2C), borderRadius: BorderRadius.circular(20)),
+            child: gifts.isEmpty
+                ? const Center(child: Text('Пока нет подарков', style: TextStyle(color: Colors.grey)))
+                : Wrap(
+                    spacing: 12,
+                    children: gifts.map((g) => Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(14)),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [Text(g['icon']!, style: const TextStyle(fontSize: 20)), const SizedBox(width: 8), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(g['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)), Text('от ${g['from']}', style: const TextStyle(fontSize: 10, color: Colors.grey))])]),
+                    )).toList(),
+                  ),
+          ),
+          const SizedBox(height: 20),
+          const Text('НАСТРОЙКИ ЭКРАНА (OLED)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+          const SizedBox(height: 6),
+          Container(
+            decoration: BoxDecoration(color: themeMode == 'oled' ? const Color(0xFF0C0C0C) : const Color(0xFF1B1D2C), borderRadius: BorderRadius.circular(20)),
+            child: Column(
+              children: [
+                RadioListTile<String>(title: const Text('OLED True Black (#000000)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)), subtitle: const Text('0% выгорания, пиксели выключены', style: TextStyle(fontSize: 11, color: Colors.grey)), value: 'oled', groupValue: themeMode, onChanged: (v) => onThemeChanged(v!)),
+                RadioListTile<String>(title: const Text('Velvet Dark (Матовая темная)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)), value: 'velvet', groupValue: themeMode, onChanged: (v) => onThemeChanged(v!)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text('ПРОИЗВОДИТЕЛЬНОСТЬ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+          const SizedBox(height: 6),
+          Container(
+            decoration: BoxDecoration(color: themeMode == 'oled' ? const Color(0xFF0C0C0C) : const Color(0xFF1B1D2C), borderRadius: BorderRadius.circular(20)),
+            child: Column(
+              children: [
+                SwitchListTile(title: const Text('120 FPS для всего интерфейса', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)), value: is120Fps, activeColor: const Color(0xFF00F59B), onChanged: on120FpsChanged),
+                SwitchListTile(title: const Text('Игровой режим (10 мс)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)), value: isGamingMode, activeColor: const Color(0xFF00F59B), onChanged: onGamingModeChanged),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GiftsShopSheet extends StatelessWidget {
+  final List<Map<String, dynamic>> catalog;
+  final Color accentColor;
+  final String themeMode;
+  final ValueChanged<Map<String, dynamic>> onBuyGift;
+
+  const _GiftsShopSheet({required this.catalog, required this.accentColor, required this.themeMode, required this.onBuyGift});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      decoration: BoxDecoration(color: themeMode == 'oled' ? const Color(0xFF090909) : const Color(0xFF161828), borderRadius: const BorderRadius.vertical(top: Radius.circular(28))),
+      child: Column(
+        children: [
+          Container(padding: const EdgeInsets.all(20), child: Row(children: [const Text('🎁 Магазин подарков Aura', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)), const Spacer(), IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context))])),
+          const Divider(height: 1, color: Colors.white12),
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(16),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 0.95, crossAxisSpacing: 12, mainAxisSpacing: 12),
+              itemCount: catalog.length,
+              itemBuilder: (ctx, idx) {
+                final g = catalog[idx];
+                final color = g['color'] as Color;
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.04), borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withOpacity(0.4))),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(g['icon'], style: const TextStyle(fontSize: 42)),
+                      const SizedBox(height: 6),
+                      Text(g['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text(g['rarity'], style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold)),
+                      const Spacer(),
+                      ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: color, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))), onPressed: () => onBuyGift(g), child: Text('${g['price']} ₽', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PaymentCheckoutSheet extends StatelessWidget {
+  final Map<String, dynamic> gift;
+  final Color accentColor;
+  final String themeMode;
+  final VoidCallback onSuccess;
+
+  const _PaymentCheckoutSheet({required this.gift, required this.accentColor, required this.themeMode, required this.onSuccess});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(color: themeMode == 'oled' ? Colors.black : const Color(0xFF161828), borderRadius: const BorderRadius.vertical(top: Radius.circular(28))),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(children: [Text(gift['icon'], style: const TextStyle(fontSize: 32)), const SizedBox(width: 12), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Покупка: ${gift['name']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), Text('К оплате: ${gift['price']} ₽', style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 14))]), const Spacer(), IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context))]),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(16)),
+            child: Row(children: const [Icon(Icons.credit_card, color: Color(0xFF00F59B)), SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Прямое зачисление на банковскую карту', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)), Text('Поддерживается СБП (0% комиссии) и МИР / Visa', style: TextStyle(fontSize: 11, color: Colors.grey))]))]),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00F59B), foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))), onPressed: onSuccess, child: const Text('Оплатить и подарить 💳', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
           ),
         ],
       ),
